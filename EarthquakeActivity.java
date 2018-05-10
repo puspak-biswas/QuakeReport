@@ -24,18 +24,20 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderCallbacks<List<Earthquake>> {
+
 
     private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
+    private static final int EARTHQUAKE_LOADER_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
-        AsyncClass task = new AsyncClass();
-        task.execute(queryString);
+        LoaderManager loaderManager = getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
     }
 
     private void updateUI(List<Earthquake> earthquakes){
@@ -47,20 +49,17 @@ public class EarthquakeActivity extends AppCompatActivity {
         earthquakeListView.setAdapter(adapter);
     }
 
-    private class AsyncClass extends AsyncTask<String,Void,List<Earthquake>>{
-        protected List<Earthquake> doInBackground(String...a){
-            List<Earthquake> earthquakes = null;
-            if(a[0] != null) {
-                // Create a fake list of earthquake locations.
-                earthquakes = QueryUtils.fetchEarthquakeData(a[0]);
-            }
-                return earthquakes;
-        }
-        protected void onPostExecute(List<Earthquake> e){
-            if (e.isEmpty()){
-                return;
-            }
-            updateUI(e);
-        }
+    
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        // TODO: Create a new loader for the given URL
+        Loader<List<Earthquake>> loader = new EarthquakeLoader(this,queryString);
+        return loader;
+    }
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        updateUI(earthquakes);
+        // TODO: Update the UI with the result
+    }
+        public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        // TODO: Loader reset, so we can clear out our existing data.
     }
 }
