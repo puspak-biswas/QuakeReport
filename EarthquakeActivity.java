@@ -15,52 +15,49 @@
  */
 package com.example.android.quakereport;
 
+import android.app.LoaderManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Loader;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
     private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
+    private EarthquakeAdapter madapter;
+    private static final int EARTHQUAKE_LOADER_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
-
-        AsyncClass task = new AsyncClass();
-        task.execute(queryString);
-    }
-
-    private void updateUI(List<Earthquake> earthquakes){
-        EarthquakeAdapter adapter = new EarthquakeAdapter(this,earthquakes);
-        // Find a reference to the {@link ListView} in the layout
+        madapter = new EarthquakeAdapter(this,new ArrayList<Earthquake>());
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
-        // Set the adapter on the {@link ListView}
-        // so the list can be populated in the user interface
-        earthquakeListView.setAdapter(adapter);
+        earthquakeListView.setAdapter(madapter);
+        LoaderManager loaderManager = getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
     }
 
-    private class AsyncClass extends AsyncTask<String,Void,List<Earthquake>>{
-        protected List<Earthquake> doInBackground(String...a){
-            List<Earthquake> earthquakes = null;
-            if(a[0] != null) {
-                // Create a fake list of earthquake locations.
-                earthquakes = QueryUtils.fetchEarthquakeData(a[0]);
-            }
-                return earthquakes;
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        // TODO: Create a new loader for the given URL
+        Loader<List<Earthquake>> loader = new EarthquakeLoader(this,queryString);
+        return loader;
+    }
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        if (earthquakes != null && !earthquakes.isEmpty()) {
+            madapter.addAll(earthquakes);
         }
-        protected void onPostExecute(List<Earthquake> e){
-            if (e.isEmpty()){
-                return;
-            }
-            updateUI(e);
-        }
+        // TODO: Update the UI with the result
+    }
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        madapter.clear();
+        // TODO: Loader reset, so we can clear out our existing data.
     }
 }
