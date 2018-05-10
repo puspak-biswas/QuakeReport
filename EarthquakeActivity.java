@@ -49,10 +49,10 @@ public class EarthquakeActivity extends AppCompatActivity {
 
     private class AsyncClass extends AsyncTask<String,Void,List<Earthquake>>{
         protected List<Earthquake> doInBackground(String...a){
-            ArrayList<Earthquake> earthquakes = null;
+            List<Earthquake> earthquakes = null;
             if(a[0] != null) {
                 // Create a fake list of earthquake locations.
-                earthquakes = QueryUtils.extractEarthquakes(a[0]);
+                earthquakes = QueryUtils.fetchEarthquakeData(a[0]);
             }
                 return earthquakes;
         }
