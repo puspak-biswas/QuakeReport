@@ -16,23 +16,30 @@
 package com.example.android.quakereport;
 
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Loader;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
-    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=2&limit=10";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private EarthquakeAdapter madapter;
     private static final int EARTHQUAKE_LOADER_ID = 1;
+    private TextView emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +50,52 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
         earthquakeListView.setAdapter(madapter);
         LoaderManager loaderManager = getLoaderManager();
         loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
+        Log.i("HaHaHaHa",":init loader");
+        emptyView = (TextView) findViewById(R.id.empty_view);
+        earthquakeListView.setEmptyView(emptyView);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
         // TODO: Create a new loader for the given URL
         Loader<List<Earthquake>> loader = new EarthquakeLoader(this,queryString);
+        Log.i("HaHaHaHa",":create loader");
         return loader;
     }
     public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        View loadingIndicator = findViewById(R.id.loading_indicator);
+        loadingIndicator.setVisibility(View.GONE);
+
+        // Set empty state text to display "No earthquakes found."
+        emptyView.setText(R.string.no_earthquakes);
+
+        // Clear the adapter of previous earthquake data
+        madapter.clear();
         if (earthquakes != null && !earthquakes.isEmpty()) {
-            madapter.addAll(earthquakes);
+           madapter.addAll(earthquakes);
         }
+        Log.i("HaHaHaHa",":finished loader");
         // TODO: Update the UI with the result
     }
     public void onLoaderReset(Loader<List<Earthquake>> loader) {
         madapter.clear();
+        Log.i("HaHaHaHa",":reset loader");
         // TODO: Loader reset, so we can clear out our existing data.
     }
 }
