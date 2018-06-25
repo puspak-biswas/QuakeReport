@@ -17,8 +17,11 @@ package com.example.android.quakereport;
 
 import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -35,7 +38,7 @@ import java.util.List;
 
 public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
-    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=2&limit=10";
+    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private EarthquakeAdapter madapter;
     private static final int EARTHQUAKE_LOADER_ID = 1;
@@ -74,7 +77,15 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
 
     public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
         // TODO: Create a new loader for the given URL
-        Loader<List<Earthquake>> loader = new EarthquakeLoader(this,queryString);
+        SharedPreferences shrPrfs = PreferenceManager.getDefaultSharedPreferences(this);
+        String minMag = shrPrfs.getString(getString(R.string.settings_min_mag_key),getString(R.string.settings_min_mag_default));
+        Uri baseUri = Uri.parse(queryString);
+        Uri.Builder uriBuilder = baseUri.buildUpon();
+        uriBuilder.appendQueryParameter("format","geojson");
+        uriBuilder.appendQueryParameter("limit", "10");
+        uriBuilder.appendQueryParameter("minmag", minMag);
+        uriBuilder.appendQueryParameter("orderby", "time");
+        Loader<List<Earthquake>> loader = new EarthquakeLoader(this,uriBuilder.toString());
         Log.i("HaHaHaHa",":create loader");
         return loader;
     }
