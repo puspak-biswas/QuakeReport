@@ -35,7 +35,7 @@ import java.util.List;
 
 public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
-    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=2&limit=10";
+    private static final String queryString = "https://earthquake.usgs.gov/fdsnws/event/1/query";
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private EarthquakeAdapter madapter;
     private static final int EARTHQUAKE_LOADER_ID = 1;
@@ -74,7 +74,16 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
 
     public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
         // TODO: Create a new loader for the given URL
-        Loader<List<Earthquake>> loader = new EarthquakeLoader(this,queryString);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String minMag = sharedPrefs.getString(getString(getString(R.string.settings_min_magnitude_key),
+                 getString(R.string.settings_min_magnitude_default));
+        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
+        uriBuilder.appendQueryParameter("format", "geojson");
+     uriBuilder.appendQueryParameter("limit", "10");
+     uriBuilder.appendQueryParameter("minmag", minMagnitude);
+     uriBuilder.appendQueryParameter("orderby", "time");
+                 
+        Loader<List<Earthquake>> loader = new EarthquakeLoader(this, uriBuilder.toString());
         Log.i("HaHaHaHa",":create loader");
         return loader;
     }
